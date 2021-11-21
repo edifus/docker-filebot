@@ -45,4 +45,4 @@ RUN set -eux && \
     /var/tmp/*
 
 # install watcher scripts
-COPY filebot/rootfs/ /
+COPY rootfs/ /
