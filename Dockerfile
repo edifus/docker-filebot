@@ -14,7 +14,6 @@ RUN set -eux && \
   echo "deb [arch=all] https://get.filebot.net/deb/ universal main" > /etc/apt/sources.list.d/filebot.list && \
   apt-get update && \
   echo "**** install dependencies ****" && \
-  apt-get update && \
   apt-get install -y default-jre-headless \
     libjna-java \
     mediainfo \
