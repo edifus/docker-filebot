@@ -48,26 +48,10 @@ if [[ ${FILEBOT_MODE} != "test" ]] && [[ ${FILEBOT_MODE} != "move" ]]; then
   exit 1
 fi
 
-if [[ ${INPUT_FOLDER} =~ "movies" ]]; then
-  FILEBOT_LABEL="Movies"
-  if [[ ${INPUT_FOLDER} =~ "movies-4k" ]]; then
-    OUTPUT_FOLDER = /seedbox/rclone/videos/movies-4k
-  elif [[ ${INPUT_FOLDER} =~ "movies-hdr" ]]; then
-    OUTPUT_FOLDER = /seedbox/rclone/videos/movies-hdr
-  else
-    OUTPUT_FOLDER = /seedbox/rclone/videos/movies
-  fi
-elif [[ ${INPUT_FOLDER} =~ "tv" ]]; then
-  FILEBOT_LABEL="Series"
-  if [[ ${INPUT_FOLDER} =~ "tv-4k" ]]; then
-    OUTPUT_FOLDER = /seedbox/rclone/videos/tv-4k
-  else
-    OUTPUT_FOLDER = /seedbox/rclone/videos/tv
-  fi
-elif [[ ${INPUT_FOLDER} =~ "anime" ]]; then
-  FILEBOT_LABEL="Anime"
-  OUTPUT_FOLDER = /seedbox/rclone/videos/anime
-fi
+[[ ${INPUT_FOLDER} =~ "movies" ]] && FILEBOT_LABEL="Movies"
+[[ ${INPUT_FOLDER} =~ "tv" ]] && FILEBOT_LABEL="Series"
+[[ ${INPUT_FOLDER} =~ "anime" ]] && FILEBOT_LABEL="Anime"
+OUTPUT_FOLDER="${INPUT_FOLDER}"
 
 echo
 echo "$(date +%Y-%m-%dT%H:%M:%S) | $0 $*"
