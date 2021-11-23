@@ -48,9 +48,26 @@ if [[ ${FILEBOT_MODE} != "test" ]] && [[ ${FILEBOT_MODE} != "move" ]]; then
   exit 1
 fi
 
-[[ ${INPUT_FOLDER} =~ "movies" ]] && _FILEBOT_LABEL="Movies"
-[[ ${INPUT_FOLDER} =~ "tv" ]] && _FILEBOT_LABEL="Series"
-[[ ${INPUT_FOLDER} =~ "anime" ]] && _FILEBOT_LABEL="Anime"
+if [[ ${INPUT_FOLDER} =~ "movies" ]]; then
+  FILEBOT_LABEL="Movies"
+  if [[ ${INPUT_FOLDER} =~ "movies-4k" ]]; then
+    OUTPUT_FOLDER = /seedbox/rclone/videos/movies-4k
+  elif [[ ${INPUT_FOLDER} =~ "movies-hdr" ]]; then
+    OUTPUT_FOLDER = /seedbox/rclone/videos/movies-hdr
+  else
+    OUTPUT_FOLDER = /seedbox/rclone/videos/movies
+  fi
+elif [[ ${INPUT_FOLDER} =~ "tv" ]]; then
+  FILEBOT_LABEL="Series"
+  if [[ ${INPUT_FOLDER} =~ "tv-4k" ]]; then
+    OUTPUT_FOLDER = /seedbox/rclone/videos/tv-4k
+  else
+    OUTPUT_FOLDER = /seedbox/rclone/videos/tv
+  fi
+elif [[ ${INPUT_FOLDER} =~ "anime" ]]; then
+  FILEBOT_LABEL="Anime"
+  OUTPUT_FOLDER = /seedbox/rclone/videos/anime
+fi
 
 echo
 echo "$(date +%Y-%m-%dT%H:%M:%S) | $0 $*"
@@ -61,6 +78,7 @@ echo
 
 exec s6-setuidgid abc \
   filebot -script fn:amc -r -no-xattr -non-strict "${INPUT_FOLDER}" \
+    --ouput "${OUTPUT_FOLDER}" \
     --action "${FILEBOT_MODE}" \
     --conflict override \
     --log-file ${FILEBOT_LOG} \
