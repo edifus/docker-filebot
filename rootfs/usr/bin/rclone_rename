@@ -1,0 +1,81 @@
+#!/usr/bin/with-contenv bash
+
+FILEBOT_MODE=
+INPUT_FOLDER=
+
+usage() {
+  cat << EOF
+  usage: $0 options
+
+  OPTIONS:
+    -h    Show this message
+    -m    Mode to run script (test/move)
+    -s    Source folder (/mnt/rclone-rw/..)
+EOF
+}
+
+while getopts ":h:m:s:" OPTION; do
+  case ${OPTION} in
+    h)
+      usage
+      exit 1
+      ;;
+    m)
+      FILEBOT_MODE=${OPTARG}
+      ;;
+    s)
+      INPUT_FOLDER=${OPTARG}
+      ;;
+    ?)
+      usage
+      exit
+      ;;
+  esac
+done
+
+
+FILEBOT_BASE=/config
+FILEBOT_LOG=${FILEBOT_BASE}/logs/filebot.amc.${FILEBOT_MODE}.log
+FILEBOT_EXCLUDE=${FILEBOT_BASE}/logs/filebot.exclude.log
+MOVIE_FORMAT=${FILEBOT_BASE}/formats/moviesFormat.groovy
+SERIES_FORMAT=${FILEBOT_BASE}/formats/seriesFormat.groovy
+ANIME_FORMAT=${FILEBOT_BASE}/formats/animeFormat.groovy
+
+OUTPUT_FOLDER=
+
+if [[ ${FILEBOT_MODE} != "test" ]] && [[ ${FILEBOT_MODE} != "move" ]]; then
+  echo "script must be run in test mode or move mode"
+  exit 1
+fi
+
+[[ ${INPUT_FOLDER} =~ "movies" ]] && _FILEBOT_LABEL="Movies"
+[[ ${INPUT_FOLDER} =~ "tv" ]] && _FILEBOT_LABEL="Series"
+[[ ${INPUT_FOLDER} =~ "anime" ]] && _FILEBOT_LABEL="Anime"
+
+echo
+echo "$(date +%Y-%m-%dT%H:%M:%S) | $0 $*"
+echo "mode:   ${FILEBOT_MODE}"
+echo "source: ${INPUT_FOLDER}"
+echo "label:  ${FILEBOT_LABEL}"
+echo
+
+exec s6-setuidgid abc \
+  filebot -script fn:amc -r -no-xattr -non-strict "${INPUT_FOLDER}" \
+    --action "${FILEBOT_MODE}" \
+    --conflict override \
+    --log-file ${FILEBOT_LOG} \
+    --def ut_label=${FILEBOT_LABEL} \
+          ignore='[.](avi|ac3|md5|nfo)$' \
+          ignore='.*(Extended|Despecialized).*' \
+          artwork=n \
+          extras=n \
+          skipExtract=y \
+          unsorted=n \
+          excludeList=${FILEBOT_EXCLUDE} \
+          movieFormat=@${MOVIE_FORMAT} \
+          seriesFormat=@${SERIES_FORMAT} \
+          animeFormat=@${ANIME_FORMAT}
+
+echo
+echo "**** $(date +%Y-%m-%dT%H:%M:%S) | filebot run complete ****"
+echo
