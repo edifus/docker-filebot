@@ -47,11 +47,6 @@ elif [[ ${_WATCH_DIR} =~ "anime" ]]; then
 fi
 
 echo "$(date +%Y-%m-%dT%H:%M:%S) | $0 $*"
-#echo "mode:   ${_FILEBOT_MODE}"
-#echo "source: ${_WATCH_DIR}"
-#echo "target: ${OUTPUT_FOLDER}"
-#echo "label:  ${FILEBOT_LABEL}"
-#echo "plex:   ${LIBRARY_INDEX}"
 
 find "${_WATCH_DIR}" -type f \( -iname '*.mkv' -o -iname '*.mp4' -o -iname '*.avi' \) -not -iname '*sample*' -links 1 \
   -exec filebot -script fn:amc -r -non-strict \
@@ -72,10 +67,10 @@ find "${_WATCH_DIR}" -type f \( -iname '*.mkv' -o -iname '*.mp4' -o -iname '*.av
 
 # update plex libraries
 if [[ "${_FILEBOT_MODE}" != "test" ]]; then
-  echo "updating plex library - curl http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${_PLEX_TOKEN}"
-  curl http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${_PLEX_TOKEN}
+  echo "**** updating plex library | curl http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${_PLEX_TOKEN}"
+  curl http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${_PLEX_TOKEN} > /dev/null 2>&1
 fi
 
 echo
-echo "**** filebot run complete ****"
+echo "$(date +%Y-%m-%dT%H:%M:%S) | filebot run complete ****"
 echo
