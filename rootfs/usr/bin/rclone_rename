@@ -62,7 +62,7 @@ echo
 
 exec s6-setuidgid abc \
   filebot -script fn:amc -r -no-xattr -non-strict "${INPUT_FOLDER}" \
-    --ouput "${OUTPUT_FOLDER}" \
+    --output "${OUTPUT_FOLDER}" \
     --action "${FILEBOT_MODE}" \
     --conflict override \
     --log-file ${FILEBOT_LOG} \
