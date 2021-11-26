@@ -46,7 +46,7 @@ elif [[ ${_WATCH_DIR} =~ "anime" ]]; then
   OUTPUT_FOLDER="${_LOCAL_DATA}/anime"
 fi
 
-echo "$(date +%Y-%m-%dT%H:%M:%S) | $0 $*"
+echo "**** $(date +%Y-%m-%dT%H:%M:%S) | filebot run started"
 
 find "${_WATCH_DIR}" -type f \( -iname '*.mkv' -o -iname '*.mp4' -o -iname '*.avi' \) -not -iname '*sample*' -links 1 \
   -exec filebot -script fn:amc -r -non-strict \
@@ -65,12 +65,12 @@ find "${_WATCH_DIR}" -type f \( -iname '*.mkv' -o -iname '*.mp4' -o -iname '*.av
         animeFormat=@${ANIME_FORMAT} \
   {} +
 
+
 # update plex libraries
 if [[ "${_FILEBOT_MODE}" != "test" ]]; then
-  echo "**** updating plex library | curl http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${_PLEX_TOKEN}"
+  echo "**** updating plex library"
+  echo "**** curl http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${_PLEX_TOKEN}"
   curl http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${_PLEX_TOKEN} > /dev/null 2>&1
 fi
 
-echo
-echo "$(date +%Y-%m-%dT%H:%M:%S) | filebot run complete ****"
-echo
+echo "**** $(date +%Y-%m-%dT%H:%M:%S) | filebot run complete"

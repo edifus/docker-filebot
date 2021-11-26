@@ -69,7 +69,9 @@ inotifywait -m -q -r -e ${EVENTS} --exclude ${EXCLUDE} --format '%w %f %e' "${WA
   do
 
     # output detected events when triggered
-    echo [CHANGE] [EVENT: "${event}"] [BASE DIR: "${dir}"] [NEW: "${filename}"]
+    echo [EVENT:    "${event}"]
+    echo [BASE DIR: "${dir}"]
+    echo [NEW:      "${filename}"]
 
     ## Clear $PID if the last command has finished.
     if [ -n "${PID}" ] && ( ! ps -p "${PID}" > /dev/null ); then
