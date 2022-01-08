@@ -69,8 +69,7 @@ find "${_WATCH_DIR}" -type f \( -iname '*.mkv' -o -iname '*.mp4' -o -iname '*.av
 # update plex libraries
 if [[ "${_FILEBOT_MODE}" != "test" ]]; then
   echo "**** updating plex library"
-  echo "**** curl http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${_PLEX_TOKEN}"
-  curl http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${_PLEX_TOKEN} > /dev/null 2>&1
+  curl -q http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${_PLEX_TOKEN}
 fi
 
 echo "**** $(date +%Y-%m-%dT%H:%M:%S) | filebot run complete"
