@@ -32,22 +32,24 @@ SERIES_FORMAT=/defaults/seriesFormat.groovy
 ANIME_FORMAT=/defaults/animeFormat.groovy
 
 echo "**** $(date +%Y-%m-%dT%H:%M:%S) | filebot run started..."
-filebot -script fn:amc \
-  -r \
-  -non-strict \
-  --action ${FILEBOT_MODE} \
-  --conflict override \
-  --log-file /data/logs/amc.${FILEBOT_MODE}.${LOG_NAME}.log \
-  --def artwork=n \
-        extras=n \
-        skipExtract=y \
-        unsorted=n \
-        ut_label=${FILEBOT_LABEL} \
-        excludeList="/data/logs/.${LOG_NAME}.excludes" \
-        movieFormat=@${MOVIE_FORMAT} \
-        seriesFormat=@${SERIES_FORMAT} \
-        animeFormat=@${ANIME_FORMAT} \
-  "$@"
+echo "     Input folder  : $1"
+echo "     Output folder : $3"
+find "$1" -type f \( -iname '*.mkv' -o -iname '*.mp4' -o -iname '*.avi' \) -not \( -iname '*sample*' -o -iname '*commentary*' \) -links 1 \
+  -exec filebot -script fn:amc -r -non-strict \
+    --action ${FILEBOT_MODE} \
+    --conflict ${CONFLICT_MODE} \
+    --output "$3" \
+    --log-file /data/logs/amc.${FILEBOT_MODE}.${LOG_NAME}.log \
+    --def artwork=n \
+          extras=n \
+          skipExtract=y \
+          unsorted=n \
+          ut_label=${FILEBOT_LABEL} \
+          excludeList="/data/logs/.${LOG_NAME}.excludes" \
+          movieFormat=@${MOVIE_FORMAT} \
+          seriesFormat=@${SERIES_FORMAT} \
+          animeFormat=@${ANIME_FORMAT} \
+  {} +
 if [ "${FILEBOT_MODE}" != "test" ]; then
   curl -q http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${PLEX_TOKEN}
 fi
