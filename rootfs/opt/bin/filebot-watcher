@@ -42,10 +42,10 @@ inotifywait -m "$1" -e create -e moved_to -e close_write --exclude '/[.@]' --for
       echo "**** $(date +%Y-%m-%dT%H:%M:%S) | filebot run started..."
       filebot -script fn:amc \
         -r \
-        -non-strict
+        -non-strict \
         --action ${FILEBOT_MODE} \
         --conflict \
-        --log-file amc.${FILEBOT_LABEL}.log \
+        --log-file amc.${FILEBOT_LABEL}.${FILEBOT_MODE}.log \
         --def artwork=n \
               extras=n \
               skipExtract=y \
@@ -55,7 +55,7 @@ inotifywait -m "$1" -e create -e moved_to -e close_write --exclude '/[.@]' --for
               movieFormat=@${MOVIE_FORMAT} \
               seriesFormat=@${SERIES_FORMAT} \
               animeFormat=@${ANIME_FORMAT} \
-      "$@"
+        "$@"
       if [ "${FILEBOT_MODE}" != "test" ]; then
         curl -q http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${PLEX_TOKEN}
       fi
