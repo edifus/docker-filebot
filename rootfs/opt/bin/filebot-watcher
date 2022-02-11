@@ -3,16 +3,28 @@
 if (echo "$1" | grep -i 'anime') >/dev/null 2>&1 ; then
   FILEBOT_LABEL="Anime"
   LIBRARY_INDEX=1
+  LOG_NAME="anime"
 elif (echo "$1" | grep -i 'movies') >/dev/null 2>&1 ; then
   FILEBOT_LABEL="Movies"
   if (echo "$1" | grep -i 'movies-4k') >/dev/null 2>&1 ; then
     LIBRARY_INDEX=6
-  else LIBRARY_INDEX=2; fi
+    LOG_NAME="movies-4k"
+  elif (echo "$1" | grep -i 'movies-hdr') >/dev/null 2>&1 ; then
+    LIBRARY_INDEX=2
+    LOG_NAME="movies-hdr"
+  else
+    LIBRARY_INDEX=2
+    LOG_NAME="movies"
+  fi
 elif (echo "$1" | grep -i 'tv') >/dev/null 2>&1 ; then
   FILEBOT_LABEL="Series"
   if (echo "$1" | grep -i 'tv-4k') >/dev/null 2>&1 ; then
     LIBRARY_INDEX=7
-  else LIBRARY_INDEX=3; fi
+    LOG_NAME="tv-4k"
+  else
+    LIBRARY_INDEX=3
+    LOG_NAME="tv"
+  fi
 fi
 
 MOVIE_FORMAT=/defaults/moviesFormat.groovy
@@ -20,6 +32,8 @@ SERIES_FORMAT=/defaults/seriesFormat.groovy
 ANIME_FORMAT=/defaults/animeFormat.groovy
 
 echo "**** $(date +%Y-%m-%dT%H:%M:%S)"
+echo "     Watch folder  : $1"
+echo "     Output folder : $3"
 inotifywait -m "$1" -e create -e moved_to -e close_write --exclude '/[.@]' --format '%w%f' $INOTIFYWAIT_OPTS | stdbuf -oL uniq | \
   while read -r FILE; do
     # make sure to inform the user that we are waiting for things to settle down
@@ -45,13 +59,13 @@ inotifywait -m "$1" -e create -e moved_to -e close_write --exclude '/[.@]' --for
         -non-strict \
         --action ${FILEBOT_MODE} \
         --conflict \
-        --log-file amc.${FILEBOT_LABEL}.${FILEBOT_MODE}.log \
+        --log-file /data/logs/amc.${LOG_NAME}.log \
         --def artwork=n \
               extras=n \
               skipExtract=y \
               unsorted=n \
               ut_label=${FILEBOT_LABEL} \
-              excludeList=".${FILEBOT_LABEL}.excludes" \
+              excludeList="/data/logs/.${LOG_NAME}.excludes" \
               movieFormat=@${MOVIE_FORMAT} \
               seriesFormat=@${SERIES_FORMAT} \
               animeFormat=@${ANIME_FORMAT} \
