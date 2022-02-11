@@ -58,7 +58,7 @@ inotifywait -m "$1" -e create -e moved_to -e close_write --exclude '/[.@]' --for
         -r \
         -non-strict \
         --action ${FILEBOT_MODE} \
-        --conflict \
+        --conflict override \
         --log-file /data/logs/amc.${LOG_NAME}.log \
         --def artwork=n \
               extras=n \
