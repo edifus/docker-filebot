@@ -1,0 +1,53 @@
+#!/bin/sh
+
+if (echo "$1" | grep -i 'anime') >/dev/null 2>&1 ; then
+  FILEBOT_LABEL="Anime"
+  LIBRARY_INDEX=1
+  LOG_NAME="anime"
+elif (echo "$1" | grep -i 'movies') >/dev/null 2>&1 ; then
+  FILEBOT_LABEL="Movies"
+  if (echo "$1" | grep -i 'movies-4k') >/dev/null 2>&1 ; then
+    LIBRARY_INDEX=6
+    LOG_NAME="movies-4k"
+  elif (echo "$1" | grep -i 'movies-hdr') >/dev/null 2>&1 ; then
+    LIBRARY_INDEX=2
+    LOG_NAME="movies-hdr"
+  else
+    LIBRARY_INDEX=2
+    LOG_NAME="movies"
+  fi
+elif (echo "$1" | grep -i 'tv') >/dev/null 2>&1 ; then
+  FILEBOT_LABEL="Series"
+  if (echo "$1" | grep -i 'tv-4k') >/dev/null 2>&1 ; then
+    LIBRARY_INDEX=7
+    LOG_NAME="tv-4k"
+  else
+    LIBRARY_INDEX=3
+    LOG_NAME="tv"
+  fi
+fi
+
+MOVIE_FORMAT=/defaults/moviesFormat.groovy
+SERIES_FORMAT=/defaults/seriesFormat.groovy
+ANIME_FORMAT=/defaults/animeFormat.groovy
+
+echo "**** $(date +%Y-%m-%dT%H:%M:%S) | filebot run started..."
+filebot -script fn:amc \
+  -r \
+  -non-strict \
+  --action ${FILEBOT_MODE} \
+  --conflict override \
+  --log-file /data/logs/amc.${FILEBOT_MODE}.${LOG_NAME}.log \
+  --def artwork=n \
+        extras=n \
+        skipExtract=y \
+        unsorted=n \
+        ut_label=${FILEBOT_LABEL} \
+        excludeList="/data/logs/.${LOG_NAME}.excludes" \
+        movieFormat=@${MOVIE_FORMAT} \
+        seriesFormat=@${SERIES_FORMAT} \
+        animeFormat=@${ANIME_FORMAT} \
+  "$@"
+if [ "${FILEBOT_MODE}" != "test" ]; then
+  curl -q http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${PLEX_TOKEN}
+fi
