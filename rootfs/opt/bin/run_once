@@ -34,7 +34,7 @@ ANIME_FORMAT=/defaults/animeFormat.groovy
 echo "**** $(date +%Y-%m-%dT%H:%M:%S) | filebot run started..."
 echo "     Input folder  : $1"
 echo "     Output folder : $3"
-find "$1" -type f \( -iname '*.mkv' -o -iname '*.mp4' -o -iname '*.avi' \) -not \( -iname '*sample*' -o -iname '*commentary*' \) -links 1 \
+find "$1" -type f \( -iname '*.mkv' -o -iname '*.mp4' -o -iname '*.avi' \) -not -iname '*sample*' -not -path '**/Commentary/*' -links 1 \
   -exec filebot -script fn:amc -r -non-strict \
     --action ${FILEBOT_MODE} \
     --conflict ${CONFLICT_MODE} \
