@@ -1,0 +1,79 @@
+#!/bin/sh
+
+if (echo "$1" | grep -i 'anime') >/dev/null 2>&1 ; then
+  FILEBOT_LABEL="Anime"
+  LIBRARY_INDEX=1
+  LOG_NAME="anime"
+elif (echo "$1" | grep -i 'movies') >/dev/null 2>&1 ; then
+  FILEBOT_LABEL="Movies"
+  if (echo "$1" | grep -i 'movies-4k') >/dev/null 2>&1 ; then
+    LIBRARY_INDEX=6
+    LOG_NAME="movies-4k"
+  elif (echo "$1" | grep -i 'movies-hdr') >/dev/null 2>&1 ; then
+    LIBRARY_INDEX=2
+    LOG_NAME="movies-hdr"
+  else
+    LIBRARY_INDEX=2
+    LOG_NAME="movies"
+  fi
+elif (echo "$1" | grep -i 'tv') >/dev/null 2>&1 ; then
+  FILEBOT_LABEL="Series"
+  if (echo "$1" | grep -i 'tv-4k') >/dev/null 2>&1 ; then
+    LIBRARY_INDEX=7
+    LOG_NAME="tv-4k"
+  else
+    LIBRARY_INDEX=3
+    LOG_NAME="tv"
+  fi
+fi
+
+MOVIE_FORMAT=/defaults/moviesFormat.groovy
+SERIES_FORMAT=/defaults/seriesFormat.groovy
+ANIME_FORMAT=/defaults/animeFormat.groovy
+
+echo "**** $(date +%Y-%m-%dT%H:%M:%S)"
+echo "     Input folder  : $1"
+echo "     Output folder : $3"
+inotifywait -m "$1" -e create -e moved_to -e close_write --exclude '/[.@]' --format '%w%f' $INOTIFYWAIT_OPTS | stdbuf -oL uniq | \
+  while read -r FILE; do
+    # make sure to inform the user that we are waiting for things to settle down
+    echo "Waiting $SETTLE_DOWN_TIME seconds for changes to settle down..."
+
+    # file may yield inode/x-empty for new files
+    sleep "$SETTLE_DOWN_TIME"
+
+    # abort if the file is currently being written (i.e. network copy operations can take minutes or hours)
+    RECENTLY_MODIFIED_FILES="$(find "$1" -type f -newermt "$SETTLE_DOWN_CHECK" -print -quit)"
+
+    if [ -n "$RECENTLY_MODIFIED_FILES" ]; then
+      echo "$RECENTLY_MODIFIED_FILES was modified less than $SETTLE_DOWN_CHECK"
+      echo "Processing deferred until next change..."
+      continue
+    fi
+
+    # e.g. video.mp4: video/mp4
+    if file --mime-type "$FILE" | egrep --quiet "directory|video|audio|empty|octet-stream"; then
+      echo "**** $(date +%Y-%m-%dT%H:%M:%S) | filebot run started..."
+      find "$1" -type f \( -iname '*.mkv' -o -iname '*.mp4' -o -iname '*.avi' \) -not -iname '*sample*' -not -path '**/Commentary/*' -links 1 \
+        -exec filebot -script fn:amc -r -non-strict \
+          --action ${FILEBOT_MODE} \
+          --conflict ${CONFLICT_MODE} \
+          --output "$3" \
+          --log-file /data/logs/amc.${FILEBOT_MODE}.${LOG_NAME}.log \
+          --def artwork=n \
+                extras=n \
+                skipExtract=y \
+                unsorted=n \
+                ut_label=${FILEBOT_LABEL} \
+                excludeList="/data/logs/.${LOG_NAME}.excludes" \
+                movieFormat=@${MOVIE_FORMAT} \
+                seriesFormat=@${SERIES_FORMAT} \
+                animeFormat=@${ANIME_FORMAT} \
+        {} +
+      if [ "${FILEBOT_MODE}" != "test" ]; then
+        curl -q http://plex:32400/library/sections/${LIBRARY_INDEX}/refresh?X-Plex-Token=${PLEX_TOKEN}
+      fi
+    else
+      echo "Ignore: $(file --mime-type "$FILE")"
+    fi
+  done

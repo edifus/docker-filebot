@@ -1,0 +1,24 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  filebot:
+    image: ghcr.io/edifus/filebot:develop
+    container_name: filebot-watcher
+    command: /seedbox/downloads/completed/tv --output /seedbox/media/videos/tv
+    environment:
+      INOTIFYWAIT_OPTS: --recursive
+      SETTLE_DOWN_TIME: 30
+      SETTLE_DOWN_CHECK: "5 seconds ago"
+      FILEBOT_MODE: test
+      PLEX_TOKEN: xxxxxxx
+    volumes:
+      - type: bind
+        source: /opt/filebot
+        target: /data
+      - type: bind
+        source: /data/seedbox
+        target: /seedbox
+        bind:
+          propagation: rshared
+    restart: unless-stopped
