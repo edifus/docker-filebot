@@ -53,6 +53,7 @@ inotifywait -m "$1" -e create -e moved_to -e close_write --exclude '/[.@]' --for
 
     # e.g. video.mp4: video/mp4
     if file --mime-type "$FILE" | egrep --quiet "directory|video|audio|empty|octet-stream"; then
+      if [ $(echo $FILE | grep DSNP >/dev/null 2>&1) ]; then filebot -clear-cache; fi # clear stale cache before disney+ shows
       echo "**** $(date +%Y-%m-%dT%H:%M:%S) | filebot run started..."
       find "$1" -type f \( -iname '*.mkv' -o -iname '*.mp4' -o -iname '*.avi' \) -not -iname '*sample*' -not -path '**/Commentary/*' -links 1 \
         -exec filebot -script fn:amc -r -non-strict \
